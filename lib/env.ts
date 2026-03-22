@@ -12,25 +12,35 @@ expand(
   }),
 )
 
-const EnvSchema = z
-  .object({
-    NODE_ENV: z.string().default("development"),
-    DATABASE_URL: z.string().min(1),
-    // Better Auth configuration
-    BETTER_AUTH_URL: z.url(),
-    BETTER_AUTH_SECRET: z.string().min(32),
-    // Email
-    RESEND_API_KEY: z.string().min(1),
-  })
+// Core — always required at startup
+const CoreEnvSchema = z.object({
+  NODE_ENV: z.string().default("development"),
+  DATABASE_URL: z.string().min(1),
+})
 
-export type env = z.infer<typeof EnvSchema>
+// Better Auth — validated when auth module is imported
+export const BetterAuthEnvSchema = z.object({
+  BETTER_AUTH_URL: z.url(),
+  BETTER_AUTH_SECRET: z.string().min(32),
+})
 
-const { data: env, error } = EnvSchema.safeParse(process.env)
+// Email — validated when email module is imported
+export const EmailEnvSchema = z.object({
+  RESEND_API_KEY: z.string().min(1),
+})
+
+export type CoreEnv = z.infer<typeof CoreEnvSchema>
+export type BetterAuthEnv = z.infer<typeof BetterAuthEnvSchema>
+export type EmailEnv = z.infer<typeof EmailEnvSchema>
+
+const { data: coreEnv, error } = CoreEnvSchema.safeParse(process.env)
 
 if (error) {
   console.error("❌ Invalid env:")
   console.error(JSON.stringify(z.treeifyError(error), null, 2))
-  process.exit(1)
+  throw new Error(
+    "Invalid environment variables — fix the errors above and restart",
+  )
 }
 
-export default env!
+export default coreEnv!

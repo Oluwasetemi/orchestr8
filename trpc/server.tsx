@@ -12,8 +12,8 @@ import { createTRPCContext } from "./init"
 export const getQueryClient = cache(makeQueryClient)
 
 export const trpc = createTRPCOptionsProxy({
-  // Provide context directly — RSC path bypasses the fetch adapter
-  ctx: async () => ({ headers: await headers() }),
+  // Use the shared context builder so proxy and caller stay consistent
+  ctx: async () => createTRPCContext({ headers: await headers() }),
   router: appRouter,
   queryClient: getQueryClient,
 })
@@ -29,17 +29,21 @@ export function HydrateClient(props: { children: React.ReactNode }) {
 }
 
 // Convenience helper: prefetch a single query or infinite query
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- TRPCQueryOptions requires `any`; no narrower type is available in tRPC v11
 export function prefetch<T extends ReturnType<TRPCQueryOptions<any>>>(
   queryOptions: T,
 ) {
   const queryClient = getQueryClient()
   if (queryOptions.queryKey[1]?.type === "infinite") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- tRPC v11 infinite query options types require this cast
     void queryClient.prefetchInfiniteQuery(queryOptions as any)
   } else {
     void queryClient.prefetchQuery(queryOptions)
   }
 }
 
-export const caller = appRouter.createCaller(() =>
-  createTRPCContext({ headers: new Headers() }),
-)
+// Server-side caller — uses real request headers so auth/cookies are available
+export const caller = appRouter.createCaller(async () => {
+  const h = await headers()
+  return createTRPCContext({ headers: h })
+})

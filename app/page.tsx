@@ -1,3 +1,6 @@
+// headers() is called inside the tRPC context — must opt out of static generation
+export const dynamic = "force-dynamic";
+
 import { Suspense } from "react";
 import { getQueryClient, trpc } from "@/trpc/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";

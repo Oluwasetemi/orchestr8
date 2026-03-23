@@ -21,9 +21,11 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { SocialButtons } from "./social-buttons"
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -115,6 +117,8 @@ export function RegisterForm() {
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Creating account…" : "Create account"}
           </Button>
+          <FieldSeparator>or</FieldSeparator>
+          <SocialButtons />
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link

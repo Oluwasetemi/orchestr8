@@ -21,4 +21,14 @@ export const auth = betterAuth({
       await sendResetPasswordEmail({ to: user.email, name: user.name, url })
     },
   },
+  socialProviders: {
+    google: {
+      clientId: authEnv.GOOGLE_CLIENT_ID,
+      clientSecret: authEnv.GOOGLE_CLIENT_SECRET,
+    },
+    github: {
+      clientId: authEnv.GITHUB_CLIENT_ID,
+      clientSecret: authEnv.GITHUB_CLIENT_SECRET,
+    },
+  },
 })

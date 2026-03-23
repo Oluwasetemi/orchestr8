@@ -21,9 +21,11 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { SocialButtons } from "./social-buttons"
 
 const schema = z.object({
   email: z.email("Enter a valid email address"),
@@ -107,6 +109,8 @@ export function LoginForm() {
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Signing in…" : "Sign in"}
           </Button>
+          <FieldSeparator>or</FieldSeparator>
+          <SocialButtons />
           <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link

@@ -3,6 +3,9 @@
 import { useState } from "react"
 import Link from "next/link"
 import type { Route } from "next"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod/v4"
 import { toast } from "sonner"
 import { requestPasswordReset } from "@/lib/auth-client"
 import {
@@ -13,26 +16,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+const schema = z.object({
+  email: z.email("Enter a valid email address"),
+})
+
+type FormValues = z.infer<typeof schema>
+
 export function ForgotPasswordForm() {
-  const [pending, setPending] = useState(false)
   const [sent, setSent] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const email = new FormData(e.currentTarget).get("email") as string
-
-    setPending(true)
-
+  async function onSubmit({ email }: FormValues) {
     const { error } = await requestPasswordReset({
       email,
       redirectTo: "/reset-password",
     })
-
-    setPending(false)
 
     if (error) {
       toast.error(error.message ?? "Something went wrong")
@@ -72,26 +78,26 @@ export function ForgotPasswordForm() {
         </CardDescription>
       </CardHeader>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
               <Input
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
-                required
                 placeholder="you@example.com"
+                {...register("email")}
               />
+              <FieldError errors={[{ message: errors.email?.message }]} />
             </Field>
           </FieldGroup>
         </CardContent>
 
         <CardFooter className="flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Sending…" : "Send reset link"}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Sending…" : "Send reset link"}
           </Button>
           <Link
             href={"/login" as Route}

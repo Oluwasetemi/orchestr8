@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import type { Route } from "next"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod/v4"
 import { toast } from "sonner"
 import { signUp } from "@/lib/auth-client"
 import {
@@ -23,35 +25,34 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-type FieldErrors = { name?: string; email?: string; password?: string }
+const schema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.email("Enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+})
+
+type FormValues = z.infer<typeof schema>
 
 export function RegisterForm() {
   const router = useRouter()
-  const [pending, setPending] = useState(false)
-  const [errors, setErrors] = useState<FieldErrors>({})
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const form = new FormData(e.currentTarget)
-    const name = form.get("name") as string
-    const email = form.get("email") as string
-    const password = form.get("password") as string
-
-    setErrors({})
-    setPending(true)
-
+  async function onSubmit({ name, email, password }: FormValues) {
     const { error } = await signUp.email({ name, email, password })
-
-    setPending(false)
 
     if (error) {
       const msg = error.message ?? ""
       if (msg.toLowerCase().includes("already")) {
-        setErrors({ email: "An account with this email already exists" })
+        setError("email", { message: "An account with this email already exists" })
       } else if (msg.toLowerCase().includes("password")) {
-        setErrors({ password: msg })
+        setError("password", { message: msg })
       } else if (msg.toLowerCase().includes("name")) {
-        setErrors({ name: msg })
+        setError("name", { message: msg })
       } else {
         toast.error(msg || "Sign up failed")
       }
@@ -69,54 +70,50 @@ export function RegisterForm() {
         <CardDescription>Enter your details to get started</CardDescription>
       </CardHeader>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="name">Name</FieldLabel>
               <Input
                 id="name"
-                name="name"
                 type="text"
                 autoComplete="name"
-                required
                 placeholder="Jane Smith"
+                {...register("name")}
               />
-              <FieldError errors={errors.name ? [{ message: errors.name }] : []} />
+              <FieldError errors={[{ message: errors.name?.message }]} />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
               <Input
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
-                required
                 placeholder="you@example.com"
+                {...register("email")}
               />
-              <FieldError errors={errors.email ? [{ message: errors.email }] : []} />
+              <FieldError errors={[{ message: errors.email?.message }]} />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="password">Password</FieldLabel>
               <Input
                 id="password"
-                name="password"
                 type="password"
                 autoComplete="new-password"
-                required
-                minLength={8}
                 placeholder="••••••••"
+                {...register("password")}
               />
-              <FieldError errors={errors.password ? [{ message: errors.password }] : []} />
+              <FieldError errors={[{ message: errors.password?.message }]} />
             </Field>
           </FieldGroup>
         </CardContent>
 
         <CardFooter className="flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Creating account…" : "Create account"}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Creating account…" : "Create account"}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}

@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import type { Route } from "next"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod/v4"
 import { toast } from "sonner"
 import { signIn } from "@/lib/auth-client"
 import {
@@ -23,29 +25,30 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+const schema = z.object({
+  email: z.email("Enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+})
+
+type FormValues = z.infer<typeof schema>
+
 export function LoginForm() {
   const router = useRouter()
-  const [pending, setPending] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const form = new FormData(e.currentTarget)
-    const email = form.get("email") as string
-    const password = form.get("password") as string
-
-    setErrors({})
-    setPending(true)
-
+  async function onSubmit({ email, password }: FormValues) {
     const { error } = await signIn.email({ email, password })
-
-    setPending(false)
 
     if (error) {
       if (error.message?.toLowerCase().includes("password")) {
-        setErrors({ password: "Invalid email or password" })
+        setError("password", { message: "Invalid email or password" })
       } else if (error.message?.toLowerCase().includes("email")) {
-        setErrors({ email: error.message })
+        setError("email", { message: error.message })
       } else {
         toast.error(error.message ?? "Sign in failed")
       }
@@ -62,33 +65,31 @@ export function LoginForm() {
         <CardDescription>Sign in to your account to continue</CardDescription>
       </CardHeader>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
               <Input
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
-                required
                 placeholder="you@example.com"
+                {...register("email")}
               />
-              <FieldError errors={errors.email ? [{ message: errors.email }] : []} />
+              <FieldError errors={[{ message: errors.email?.message }]} />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="password">Password</FieldLabel>
               <Input
                 id="password"
-                name="password"
                 type="password"
                 autoComplete="current-password"
-                required
                 placeholder="••••••••"
+                {...register("password")}
               />
-              <FieldError errors={errors.password ? [{ message: errors.password }] : []} />
+              <FieldError errors={[{ message: errors.password?.message }]} />
             </Field>
 
             <div className="text-right">
@@ -103,8 +104,8 @@ export function LoginForm() {
         </CardContent>
 
         <CardFooter className="flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Signing in…" : "Sign in"}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Signing in…" : "Sign in"}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}

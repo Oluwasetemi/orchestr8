@@ -16,6 +16,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,
+    autoSignIn: true,
     async sendResetPassword({ user, url }) {
       await sendResetPasswordEmail({ to: user.email, name: user.name, url })
     },

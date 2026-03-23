@@ -7,7 +7,7 @@ export const appRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(20),
-        cursor: z.number().optional(), // last seen id
+        cursor: z.string().optional(), // last seen id
       }).optional(),
     )
     .query(async ({ input }) => {

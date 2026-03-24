@@ -13,8 +13,12 @@ export default function Client() {
   const { data } = useSuspenseQuery(trpc.getUsers.queryOptions())
 
   async function handleSignOut() {
-    await signOut()
-    router.push("/login" as Route)
+    try {
+      await signOut()
+      router.push("/login" as Route)
+    } catch (error) {
+      console.error("Sign out failed:", error)
+    }
   }
 
   return (

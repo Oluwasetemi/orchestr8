@@ -46,6 +46,8 @@ model Account {
   password              String?
   createdAt             DateTime
   updatedAt             DateTime
+
+  @@unique([providerId, accountId])
 }
 
 model Verification {

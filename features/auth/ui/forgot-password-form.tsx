@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useState } from "react"
 import Link from "next/link"
 import type { Route } from "next"
 import { z } from "zod/v4"
@@ -38,7 +38,10 @@ const descCls = "text-[#5e5549]"
 const backLinkCls = "text-center text-sm text-[#5e5448] hover:text-amber-400/80 transition-colors"
 
 export function ForgotPasswordForm() {
+  const [showForm, setShowForm] = useState(false)
+
   async function action(_prev: State, formData: FormData): Promise<State> {
+    setShowForm(false)
     const parsed = schema.safeParse({ email: formData.get("email") })
     if (!parsed.success) {
       return { cardState: "form", errors: { email: parsed.error.flatten().fieldErrors.email?.[0] } }
@@ -54,7 +57,9 @@ export function ForgotPasswordForm() {
 
   const [state, formAction, isPending] = useActionState(action, { cardState: "form" })
 
-  if (state.cardState === "sent") {
+  const cardState = showForm ? "form" : state.cardState
+
+  if (cardState === "sent") {
     return (
       <Card className={cardCls}>
         <CardHeader className="px-8 pt-8 pb-2">
@@ -77,7 +82,7 @@ export function ForgotPasswordForm() {
     )
   }
 
-  if (state.cardState === "socialError") {
+  if (cardState === "socialError") {
     return (
       <Card className={cardCls}>
         <CardHeader className="px-8 pt-8 pb-2">
@@ -95,7 +100,7 @@ export function ForgotPasswordForm() {
           <Button
             variant="ghost"
             className="w-full border border-white/[0.08] text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04] rounded-xl"
-            onClick={() => formAction(new FormData())}
+            onClick={() => setShowForm(true)}
             disabled={isPending}
           >
             Try a different email

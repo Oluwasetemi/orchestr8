@@ -44,7 +44,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       confirm: formData.get("confirm"),
     })
     if (!parsed.success) {
-      const f = z.treeifyError(parsed.error).properties!
+      const f = z.treeifyError(parsed.error).properties ?? {}
       return { errors: { password: f.password?.errors?.[0], confirm: f.confirm?.errors?.[0] } }
     }
     const { error } = await authClient.resetPassword({ newPassword: parsed.data.password, token })

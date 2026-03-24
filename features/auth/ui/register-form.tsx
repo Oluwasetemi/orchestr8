@@ -58,7 +58,7 @@ export function RegisterForm() {
       confirm: formData.get("confirm"),
     })
     if (!parsed.success) {
-      const f = z.treeifyError(parsed.error).properties!
+      const f = z.treeifyError(parsed.error).properties ?? {}
       return {
         errors: {
           name: f.name?.errors?.[0],
@@ -68,7 +68,8 @@ export function RegisterForm() {
         },
       }
     }
-    const { error } = await signUp.email(parsed.data)
+    const { name, email, password } = parsed.data
+    const { error } = await signUp.email({ name, email, password })
     if (error) {
       const msg = error.message ?? ""
       if (msg.toLowerCase().includes("already")) return { errors: { email: "An account with this email already exists" } }

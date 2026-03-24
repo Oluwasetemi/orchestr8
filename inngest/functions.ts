@@ -1,21 +1,31 @@
-import prisma from "@/lib/db"
-import { inngest } from "./client"
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
+import { anthropic } from "@ai-sdk/anthropic";
+import { inngest } from "./client";
 
-// Example function — triggers on "test/hello.world" event
-// Replace or extend this with your actual background jobs
-export const helloWorld = inngest.createFunction(
-  { id: "hello-world", triggers: [{ event: "test/hello.world" }] },
+export const execute = inngest.createFunction(
+  { id: "execute", triggers: [{ event: "workflow/execute" }] },
   async ({ event, step }) => {
-    await step.sleep("wait-a-moment", "1s")
-    await step.sleep("wait-a-moment2", "5s")
-    await step.run("create workflow", () => {
-      return prisma.workflow.create({
-        data: {
-          name: "Test Workflow",
-          userId: "FuPYnu7kXTX651dClSOj6IGAPIvpZLYh"
-        } 
-      })
-      
-})
+    const question =
+      (event.data?.question as string) ??
+      "What is the meaning of life in one sentence?";
+
+    const openaiResult = await step.ai.wrap("ask-openai", generateText, {
+      model: openai("gpt-4o-mini"),
+      prompt: question,
+    });
+
+    const geminiResult = await step.ai.wrap("ask-gemini", generateText, {
+      model: google("gemini-2.5-flash"),
+      prompt: question,
+    });
+
+    const anthropicResult = await step.ai.wrap("ask-anthropic", generateText, {
+      model: anthropic("claude-sonnet-4-6"),
+      prompt: question,
+    });
+
+    return { question, results: [openaiResult, geminiResult, anthropicResult] };
   },
-)
+);

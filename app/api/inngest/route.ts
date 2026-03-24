@@ -1,6 +1,6 @@
 import { serve } from "inngest/next"
 import { inngest } from "@/inngest/client"
-import { helloWorld } from "@/inngest/functions"
+import { execute } from "@/inngest/functions"
 
 // Inngest communicates with this endpoint:
 // - GET  → syncs function definitions with the Dev Server / Cloud
@@ -9,7 +9,6 @@ import { helloWorld } from "@/inngest/functions"
 export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
-    helloWorld,
-    // add new functions here
+    execute,
   ],
 })

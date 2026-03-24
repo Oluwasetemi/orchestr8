@@ -2,6 +2,7 @@ import { z } from "zod/v4"
 import { createTRPCRouter, protectedProcedure } from "../init"
 import prisma from "@/lib/db"
 import { inngest } from "@/inngest/client"
+import { DEFAULT_AI_QUESTION } from "@/inngest/constants"
 
 export const workflowRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -24,7 +25,7 @@ export const workflowRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       await inngest.send({
         name: "workflow/execute",
-        data: { question: input.question ?? "What is the meaning of life in one sentence?" },
+        data: { question: input.question ?? DEFAULT_AI_QUESTION },
       })
       return { queued: true }
     }),

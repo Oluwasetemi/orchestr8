@@ -20,6 +20,7 @@ export default function Client() {
         queryClient.invalidateQueries(trpc.workflow.getAll.queryFilter())
         toast.success("Workflow created")
       },
+      onError: (err) => toast.error(err.message),
     })
   )
 

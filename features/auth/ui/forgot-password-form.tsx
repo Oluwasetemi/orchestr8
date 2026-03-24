@@ -1,10 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useActionState } from "react"
 import Link from "next/link"
 import type { Route } from "next"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod/v4"
 import { toast } from "sonner"
 import { requestPasswordReset } from "@/lib/auth-client"
@@ -19,92 +17,119 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { SocialButtons } from "./social-buttons"
+import { SubmitButton } from "./submit-button"
 
 const schema = z.object({
   email: z.email("Enter a valid email address"),
 })
 
-type FormValues = z.infer<typeof schema>
+type CardState = "form" | "sent" | "socialError"
+type State = { cardState: CardState; errors?: { email?: string } }
+
+const SOCIAL_ERRS = ["social", "oauth", "provider", "password not set", "no password"]
+const isSocialErr = (msg: string) => SOCIAL_ERRS.some((k) => msg.toLowerCase().includes(k))
+
+const cardCls = "w-full rounded-none rounded-b-xl border-0 bg-[#1b1815] shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_24px_56px_rgba(0,0,0,0.55)]"
+const inputCls = "h-11 px-4 rounded-xl bg-[#1f1c18] border-white/[0.09] text-zinc-100 placeholder:text-[#3d3830] focus-visible:border-amber-500/50 focus-visible:ring-2 focus-visible:ring-amber-500/10 dark:bg-[#1f1c18]"
+const labelCls = "text-[10px] font-bold uppercase tracking-[0.12em] text-[#5a5248]"
+const titleCls = "text-[1.45rem] font-bold tracking-[-0.02em] text-zinc-100"
+const descCls = "text-[#5e5549]"
+const backLinkCls = "text-center text-sm text-[#5e5448] hover:text-amber-400/80 transition-colors"
 
 export function ForgotPasswordForm() {
-  const [sent, setSent] = useState(false)
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) })
-
-  async function onSubmit({ email }: FormValues) {
-    const { error } = await requestPasswordReset({
-      email,
-      redirectTo: "/reset-password",
-    })
-
-    if (error) {
-      toast.error(error.message ?? "Something went wrong")
-      return
+  async function action(_prev: State, formData: FormData): Promise<State> {
+    const parsed = schema.safeParse({ email: formData.get("email") })
+    if (!parsed.success) {
+      return { cardState: "form", errors: { email: parsed.error.flatten().fieldErrors.email?.[0] } }
     }
-
-    setSent(true)
+    const { error } = await requestPasswordReset({ email: parsed.data.email, redirectTo: "/reset-password" })
+    if (error) {
+      if (isSocialErr(error.message ?? "")) return { cardState: "socialError" }
+      toast.error(error.message ?? "Something went wrong")
+      return { cardState: "form" }
+    }
+    return { cardState: "sent" }
   }
 
-  if (sent) {
+  const [state, formAction, isPending] = useActionState(action, { cardState: "form" })
+
+  if (state.cardState === "sent") {
     return (
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Check your email</CardTitle>
-          <CardDescription>
-            We sent a password reset link. It expires in 1 hour.
+      <Card className={cardCls}>
+        <CardHeader className="px-8 pt-8 pb-2">
+          <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-400">
+            <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current stroke-[1.5]">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+            </svg>
+          </div>
+          <CardTitle className={titleCls} style={{ fontFamily: "var(--font-syne)" }}>
+            Check your email
+          </CardTitle>
+          <CardDescription className={descCls}>
+            We sent a reset link. It expires in 1 hour.
           </CardDescription>
         </CardHeader>
-        <CardFooter>
-          <Link
-            href={"/login" as Route}
-            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+        <CardFooter className="border-0 bg-transparent px-8 pb-8">
+          <Link href={"/login" as Route} className={backLinkCls}>← Back to sign in</Link>
+        </CardFooter>
+      </Card>
+    )
+  }
+
+  if (state.cardState === "socialError") {
+    return (
+      <Card className={cardCls}>
+        <CardHeader className="px-8 pt-8 pb-2">
+          <CardTitle className={titleCls} style={{ fontFamily: "var(--font-syne)" }}>
+            Social account detected
+          </CardTitle>
+          <CardDescription className={descCls}>
+            This email is linked to a social account — no password was set. Sign in with the provider you used originally.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="px-8 pt-3 pb-2">
+          <SocialButtons />
+        </CardContent>
+        <CardFooter className="border-0 bg-transparent px-8 pb-8">
+          <Button
+            variant="ghost"
+            className="w-full border border-white/[0.08] text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04] rounded-xl"
+            onClick={() => formAction(new FormData())}
+            disabled={isPending}
           >
-            Back to sign in
-          </Link>
+            Try a different email
+          </Button>
         </CardFooter>
       </Card>
     )
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>Forgot password?</CardTitle>
-        <CardDescription>
-          Enter your email and we&apos;ll send you a reset link
+    <Card className={cardCls}>
+      <CardHeader className="px-8 pt-8 pb-2">
+        <CardTitle className={titleCls} style={{ fontFamily: "var(--font-syne)" }}>
+          Reset password
+        </CardTitle>
+        <CardDescription className={descCls}>
+          Enter your email and we&apos;ll send a reset link
         </CardDescription>
       </CardHeader>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent>
+      <form action={formAction}>
+        <CardContent className="px-8 pt-5 pb-2">
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                {...register("email")}
-              />
-              <FieldError errors={[{ message: errors.email?.message }]} />
+              <FieldLabel htmlFor="email" className={labelCls}>Email</FieldLabel>
+              <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com" className={inputCls} />
+              <FieldError className="text-rose-400/80 text-xs" errors={[{ message: state.errors?.email }]} />
             </Field>
           </FieldGroup>
         </CardContent>
 
-        <CardFooter className="flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Sending…" : "Send reset link"}
-          </Button>
-          <Link
-            href={"/login" as Route}
-            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-          >
-            Back to sign in
-          </Link>
+        <CardFooter className="mt-2 flex-col gap-4 border-0 bg-transparent px-8 pb-8">
+          <SubmitButton label="Send reset link" pendingLabel="Sending…" />
+          <Link href={"/login" as Route} className={backLinkCls}>← Back to sign in</Link>
         </CardFooter>
       </form>
     </Card>

@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
+import { lastLoginMethod } from "better-auth/plugins"
 import { BetterAuthEnvSchema, EmailEnvSchema } from "@/lib/env"
 import prisma from "@/lib/db"
 import { sendResetPasswordEmail } from "@/lib/email"
@@ -21,6 +22,7 @@ export const auth = betterAuth({
       await sendResetPasswordEmail({ to: user.email, name: user.name, url })
     },
   },
+  plugins: [lastLoginMethod()],
   socialProviders: {
     google: {
       clientId: authEnv.GOOGLE_CLIENT_ID,

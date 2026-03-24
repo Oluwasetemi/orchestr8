@@ -1,19 +1,19 @@
-import { Resend } from "resend"
-import { EmailEnvSchema } from "@/lib/env"
+import { Resend } from "resend";
+import { EmailEnvSchema } from "@/lib/env";
 
-const { RESEND_API_KEY } = EmailEnvSchema.parse(process.env)
-const resend = new Resend(RESEND_API_KEY)
+const { RESEND_API_KEY } = EmailEnvSchema.parse(process.env);
+const resend = new Resend(RESEND_API_KEY);
 
-const FROM = "Orchestr8 <noreply@orchestr8.dev>"
+const FROM = "Orchestr8 <orchestr8@oluwasetemi.dev>";
 
 export async function sendResetPasswordEmail({
   to,
   name,
   url,
 }: {
-  to: string
-  name: string
-  url: string
+  to: string;
+  name: string;
+  url: string;
 }) {
   await resend.emails.send({
     from: FROM,
@@ -34,5 +34,5 @@ export async function sendResetPasswordEmail({
     </p>
   </body>
 </html>`,
-  })
+  });
 }

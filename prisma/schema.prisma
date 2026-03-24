@@ -8,15 +8,25 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String     @id
   name          String
-  email         String    @unique
+  email         String     @unique
   emailVerified Boolean
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  workflows     Workflow[]
+}
+
+model Workflow {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Session {

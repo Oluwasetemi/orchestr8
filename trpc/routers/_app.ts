@@ -1,8 +1,11 @@
 import { z } from "zod/v4";
 import { createTRPCRouter, protectedProcedure } from "../init";
 import prisma from "@/lib/db";
+import { workflowRouter } from "./workflow";
 
 export const appRouter = createTRPCRouter({
+  workflow: workflowRouter,
+
   getUsers: protectedProcedure
     .input(
       z

@@ -1,0 +1,6 @@
+procs:
+  next:
+    cmd: ["bun", "run", "dev"]
+
+  inngest:
+    cmd: ["npx", "--ignore-scripts=false", "inngest-cli@latest", "dev"]

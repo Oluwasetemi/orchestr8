@@ -2,7 +2,10 @@ import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
 import { anthropic } from "@ai-sdk/anthropic";
+import { AIEnvSchema } from "@/lib/env";
 import { inngest } from "./client";
+
+AIEnvSchema.parse(process.env);
 
 export const execute = inngest.createFunction(
   { id: "execute", triggers: [{ event: "workflow/execute" }] },

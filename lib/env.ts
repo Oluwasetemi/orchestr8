@@ -33,9 +33,17 @@ export const EmailEnvSchema = z.object({
   RESEND_API_KEY: z.string().min(1),
 })
 
+// AI providers — validated when inngest functions are imported
+export const AIEnvSchema = z.object({
+  OPENAI_API_KEY: z.string().min(1),
+  GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1),
+  ANTHROPIC_API_KEY: z.string().min(1),
+})
+
 export type CoreEnv = z.infer<typeof CoreEnvSchema>
 export type BetterAuthEnv = z.infer<typeof BetterAuthEnvSchema>
 export type EmailEnv = z.infer<typeof EmailEnvSchema>
+export type AIEnv = z.infer<typeof AIEnvSchema>
 
 const { data: coreEnv, error } = CoreEnvSchema.safeParse(process.env)
 

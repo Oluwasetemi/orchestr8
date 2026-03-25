@@ -10,6 +10,7 @@ const authEnv = BetterAuthEnvSchema.parse(process.env)
 export const auth = betterAuth({
   baseURL: authEnv.BETTER_AUTH_URL,
   secret: authEnv.BETTER_AUTH_SECRET,
+  trustedOrigins: [authEnv.BETTER_AUTH_URL, "http://localhost:3000"],
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,

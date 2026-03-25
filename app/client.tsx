@@ -17,9 +17,17 @@ export default function Client() {
   const { mutate: createWorkflow, isPending } = useMutation(
     trpc.workflow.create.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.workflow.getAll.queryFilter());
-        toast.success("Job Queued")
+        queryClient.invalidateQueries(trpc.workflow.getAll.queryFilter())
+        toast.success("Workflow created")
       },
+      onError: (err) => toast.error(err.message),
+    })
+  )
+
+  const { mutate: testAI, isPending: isTestingAI } = useMutation(
+    trpc.workflow.testAI.mutationOptions({
+      onSuccess: () => toast.success("AI job queued — check Inngest Dev Server at localhost:8288"),
+      onError: (err) => toast.error(err.message),
     })
   )
 
@@ -42,6 +50,13 @@ export default function Client() {
             disabled={isPending}
           >
             {isPending ? "Creating…" : "Create Workflow"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => testAI({})}
+            disabled={isTestingAI}
+          >
+            {isTestingAI ? "Queuing…" : "Test AI"}
           </Button>
           <Button variant="destructive" onClick={handleSignOut}>
             Sign Out

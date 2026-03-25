@@ -2,6 +2,7 @@ import { z } from "zod/v4"
 import { createTRPCRouter, protectedProcedure } from "../init"
 import prisma from "@/lib/db"
 import { inngest } from "@/inngest/client"
+import { DEFAULT_AI_QUESTION } from "@/inngest/constants"
 
 export const workflowRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -14,7 +15,18 @@ export const workflowRouter = createTRPCRouter({
   create: protectedProcedure
     .input(z.object({ name: z.string().min(1, "Name is required").max(100) }))
     .mutation(async ({ input, ctx }) => {
-      await inngest.send({ name: "test/hello.world", data: { email: "user@example.com" } })
-      return { success: true, message: "Job queued" }
+      return prisma.workflow.create({
+        data: { name: input.name, userId: ctx.auth.user.id },
+      })
+    }),
+
+  testAI: protectedProcedure
+    .input(z.object({ question: z.string().min(1).optional() }))
+    .mutation(async ({ input }) => {
+      await inngest.send({
+        name: "workflow/execute",
+        data: { question: input.question ?? DEFAULT_AI_QUESTION },
+      })
+      return { queued: true }
     }),
 })

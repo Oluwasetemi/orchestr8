@@ -14,11 +14,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { FieldGroup} from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
 import { SocialButtons } from "./social-buttons"
 import { SubmitButton } from "./submit-button"
+import { FormField } from "@/components/form/form-field"
 
 const schema = z.object({
   email: z.email("Enter a valid email address"),
@@ -31,8 +31,6 @@ const SOCIAL_ERRS = ["social", "oauth", "provider", "password not set", "no pass
 const isSocialErr = (msg: string) => SOCIAL_ERRS.some((k) => msg.toLowerCase().includes(k))
 
 const cardCls = "w-full rounded-none rounded-b-xl border-0 bg-[#1b1815] shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_24px_56px_rgba(0,0,0,0.55)]"
-const inputCls = "h-11 px-4 rounded-xl bg-[#1f1c18] border-white/[0.09] text-zinc-100 placeholder:text-[#3d3830] focus-visible:border-amber-500/50 focus-visible:ring-2 focus-visible:ring-amber-500/10 dark:bg-[#1f1c18]"
-const labelCls = "text-[10px] font-bold uppercase tracking-[0.12em] text-[#5a5248]"
 const titleCls = "text-[1.45rem] font-bold tracking-[-0.02em] text-zinc-100"
 const descCls = "text-[#5e5549]"
 const backLinkCls = "text-center text-sm text-[#5e5448] hover:text-amber-400/80 transition-colors"
@@ -124,11 +122,15 @@ export function ForgotPasswordForm() {
       <form action={formAction}>
         <CardContent className="px-8 pt-5 pb-2">
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="email" className={labelCls}>Email</FieldLabel>
-              <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com" className={inputCls} />
-              <FieldError className="text-rose-400/80 text-xs" errors={[{ message: state.errors?.email }]} />
-            </Field>
+            <FormField 
+              htmlFor="email"
+              label="Email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              state={state}
+            />
           </FieldGroup>
         </CardContent>
 

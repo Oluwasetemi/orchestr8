@@ -20,6 +20,9 @@ export function useResetPassword() {
     if (result?.redirectTo) {
       toast.success("Password updated — please proceed to sign in with your new password.")
       router.push(result.redirectTo as Route)
+    } else {
+      toast.error(result?.errors || "Reset Password failed")
+      return null
     }
     
     return result

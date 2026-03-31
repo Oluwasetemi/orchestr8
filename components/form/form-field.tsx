@@ -3,12 +3,14 @@ import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 import { Route } from "next";
 
-type RegisterErrors = {
-  name?: string
-  email?: string
-  password?: string
-  confirm?: string
-}
+// type RegisterErrors = {
+//   name?: string
+//   email?: string
+//   password?: string
+//   confirm?: string
+// }
+
+type FormErrors = Partial<Record<string, string>>
 
 type FormFieldType = {
   htmlFor: string,
@@ -19,7 +21,8 @@ type FormFieldType = {
   forgetPasswordLink?: boolean
   placeholder: string,
   state?: {
-    errors?: RegisterErrors,
+    errors?: FormErrors
+    // errors?: RegisterErrors,
     redirectTo?: string
   } | null,
 }
@@ -54,7 +57,7 @@ export function FormField ({type, autocomplete, forgetPasswordLink, name, label,
         className={inputCls}
         {...props}
       />
-      <FieldError className={errorCls} errors={[{ message: state?.errors?.email }]} />
+      <FieldError className={errorCls} errors={[{ message: state?.errors?.[name] }]} />
     </Field>
   )
 }

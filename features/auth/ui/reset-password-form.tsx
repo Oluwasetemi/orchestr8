@@ -45,6 +45,12 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </CardDescription>
       </CardHeader>
 
+      {state?.errors?.token && (
+        <p role="alert" className="mb-4 text-sm text-rose-400/80">
+          {state.errors.token}
+        </p>
+      )}
+
       <form action={formAction}>
         <CardContent className="px-8 pt-5 pb-2">
           <FieldGroup className="gap-5">

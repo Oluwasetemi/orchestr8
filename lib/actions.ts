@@ -1,8 +1,6 @@
 'use server'
 
 import { z } from "zod/v4"
-import { toast } from "sonner"
-import { authClient, signIn, signUp } from "@/lib/auth-client"
 import {
   loginSchema, 
   LoginState, 
@@ -11,6 +9,7 @@ import {
   resetPassordSchema, 
   ResetPasswordState 
 } from "./validation-schemas"
+import { auth } from "./auth"
 
 
 /*  
@@ -42,21 +41,18 @@ export async function registerAction(_prev: RegisterState, formData: FormData): 
 
   const { name, email, password } = parsed.data
 
-  const { error } = await signUp.email({ name, email, password })
+  const { error } = await auth.api.signUp({ name, email, password })
 
   if (error) {
     const msg = error.message ?? ""
     if (msg.toLowerCase().includes("already")) return { errors: { email: "An account with this email already exists" } }
     if (msg.toLowerCase().includes("password")) return { errors: { password: msg } }
     if (msg.toLowerCase().includes("name")) return { errors: { name: msg } }
-    toast.error(msg || "Sign up failed")
-    return null
   }
   
   return {
     redirectTo: '/login'
   }
-
 }
 
 
@@ -74,13 +70,12 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
     const f = parsed.error.flatten().fieldErrors
     return { errors: { email: f.email?.[0], password: f.password?.[0] } }
   }
-  const { error } = await signIn.email(parsed.data)
+  const { error } = await auth.api.signIn((parsed.data))
+  
   if (error) {
     const msg = error.message ?? ""
     if (msg.toLowerCase().includes("password")) return { errors: { password: "Invalid email or password" } }
     if (msg.toLowerCase().includes("email")) return { errors: { email: msg } }
-    toast.error(msg || "Sign in failed")
-    return null
   }
   
   return {
@@ -106,15 +101,26 @@ export async function resetPasswordAction(_prev: ResetPasswordState, formData: F
 
   const {token, password} = parsed.data
 
-  const { error } = await authClient.resetPassword({ newPassword: password, token})
+  const { error } = await auth.api.resetPassword({
+    body: {
+      newPassword: password, token
+    }
+  })
+
   if (error) {
     if (error.message?.toLowerCase().includes("token")) {
-      toast.error("This reset link has expired or already been used. Request a new one.")
-      return null
+      return {
+        errors: {
+          token: 'This reset link has expired or already been used. Request a new one.'
+        }
+      }
     }
-    return { errors: { password: error.message ?? "Failed to reset password" } }
+    return { 
+      errors: { 
+        password: error.message ?? "Failed to reset password" 
+      } 
+    }
   }
-  toast.success("Password updated — please sign in.")
   
   return {
     redirectTo: '/login'

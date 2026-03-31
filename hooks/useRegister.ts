@@ -20,6 +20,9 @@ export function useRegister() {
     if (result?.redirectTo) {
       toast.success("Account created! Please sign in.")
       router.push(result.redirectTo as Route)
+    } else {
+      toast.error(result?.errors || "Sign up failed")
+      return null
     }
     
     return result

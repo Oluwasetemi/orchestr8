@@ -20,6 +20,9 @@ export function useLogin() {
     if (result?.redirectTo) {
       toast.success("Welcome Back!")
       router.push(result.redirectTo as Route)
+    } else {
+      toast.error(result?.errors || "Sign in failed")
+      return null
     }
     
     return result

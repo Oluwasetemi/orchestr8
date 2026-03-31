@@ -15,14 +15,22 @@ export function useLogin() {
     
   async function action(prev: LoginState, formData: FormData): Promise<LoginState> {
 
-    const result = await loginAction(prev, formData)
+    let result: LoginState
+
+    try {
+      result = await loginAction(prev, formData)
+    } catch {
+      toast.error("Sign in failed")
+      return { errors: { email: "Something went wrong. Please try again." } }
+    }
+  
 
     if (result?.redirectTo) {
       toast.success("Welcome Back!")
       router.push(result.redirectTo as Route)
     } else {
-      toast.error(result?.errors || "Sign in failed")
-      return null
+      const message = result?.errors?.email ?? result?.errors?.password ?? "Sign in failed"
+      toast.error(message)
     }
     
     return result

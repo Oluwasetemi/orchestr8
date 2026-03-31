@@ -22,7 +22,6 @@ export function useRegister() {
       router.push(result.redirectTo as Route)
     } else {
       toast.error(result?.errors || "Sign up failed")
-      return null
     }
     
     return result

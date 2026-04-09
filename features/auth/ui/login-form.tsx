@@ -75,11 +75,11 @@ export function LoginForm() {
         </CardContent>
 
         <CardFooter className="mt-2 flex-col gap-4 border-0 bg-transparent px-8 pb-8">
-          <SubmitButton label="Sign in" pendingLabel="Signing in…" />
+          <SubmitButton label="Sign in" pendingLabel="Signing in…" isSubmitting={isLoggingIn}  />
           <FieldSeparator className="[&_[data-slot=field-separator-content]]:bg-[#1b1815] [&_[data-slot=field-separator-content]]:text-[#3e3830] text-[10px] uppercase tracking-widest">
             or
           </FieldSeparator>
-          <SocialButtons isSubmitting={isLoggingIn} />
+          <SocialButtons />
           <p className="text-center text-sm text-[#4a4238]">
             No account?{" "}
             <Link

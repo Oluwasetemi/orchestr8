@@ -20,7 +20,7 @@ import { FormField } from "../../../components/form/form-field"
 
 export function ResetPasswordForm({ token }: { token: string }) {
 
-  const {state, formAction} = useResetPassword()
+  const {state, formAction, isResettingPassword} = useResetPassword()
 
   if (!token) {
     return (
@@ -79,7 +79,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </CardContent>
 
         <CardFooter className="mt-2 flex-col gap-4 border-0 bg-transparent px-8 pb-8">
-          <SubmitButton label="Update password" pendingLabel="Updating…" />
+          <SubmitButton label="Update password" pendingLabel="Updating…" isSubmitting={isResettingPassword} />
           <Link
             href={"/login" as Route}
             className="text-center text-sm text-[#5e5448] hover:text-amber-400/80 transition-colors"

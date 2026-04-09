@@ -10,7 +10,7 @@ import { loginAction } from "@/lib/actions"
 
 export function useLogin() {
   
-  const [state, formAction] = useActionState(action, null)
+  const [state, formAction, isPending] = useActionState(action, null)
   const router = useRouter()
     
   async function action(prev: LoginState, formData: FormData): Promise<LoginState> {
@@ -36,5 +36,5 @@ export function useLogin() {
     return result
   }
 
-  return { state, formAction}
+  return { state, formAction, isLoggingIn: isPending}
 }

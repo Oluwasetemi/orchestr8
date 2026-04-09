@@ -26,7 +26,7 @@ import { FormField } from "@/components/form/form-field"
 
 export function LoginForm() {
   const { lastUsed } = useLastUsedAuth()
-  const { state, formAction} = useLogin()
+  const { state, formAction, isLoggingIn} = useLogin()
 
   return (
     <Card className="w-full rounded-none rounded-b-xl border-0 bg-[#1b1815] shadow-[0_0_0_1px_rgba(255,255,255,0.07),0_24px_56px_rgba(0,0,0,0.55)]">
@@ -79,7 +79,7 @@ export function LoginForm() {
           <FieldSeparator className="[&_[data-slot=field-separator-content]]:bg-[#1b1815] [&_[data-slot=field-separator-content]]:text-[#3e3830] text-[10px] uppercase tracking-widest">
             or
           </FieldSeparator>
-          <SocialButtons />
+          <SocialButtons isSubmitting={isLoggingIn} />
           <p className="text-center text-sm text-[#4a4238]">
             No account?{" "}
             <Link

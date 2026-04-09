@@ -10,7 +10,7 @@ import { registerAction } from "@/lib/actions"
 
 export function useRegister() {
   
-  const [state, formAction] = useActionState(action, null)
+  const [state, formAction, isPending] = useActionState(action, null)
   const router = useRouter()
     
   async function action(prev: RegisterState, formData: FormData): Promise<RegisterState> {
@@ -27,5 +27,5 @@ export function useRegister() {
     return result
   }
 
-  return { state, formAction}
+  return { state, formAction, isRegistering: isPending}
 }

@@ -10,7 +10,7 @@ import { resetPasswordAction } from "@/lib/actions"
 
 export function useResetPassword() {
   
-  const [state, formAction] = useActionState(action, null)
+  const [state, formAction, isPending] = useActionState(action, null)
   const router = useRouter()
     
   async function action(prev: ResetPasswordState, formData: FormData): Promise<ResetPasswordState> {
@@ -28,5 +28,5 @@ export function useResetPassword() {
     return result
   }
 
-  return { state, formAction}
+  return { state, formAction, isResettingPassword: isPending}
 }
